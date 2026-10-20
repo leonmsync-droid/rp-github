@@ -35,7 +35,17 @@ final class GitHub
     {
         $url = self::API . $path . ($query ? '?' . http_build_query($query) : '');
         for ($attempt = 1; ; $attempt++) {
-            [$status, $headers, $raw] = $this->request($url);
+            try {
+                [$status, $headers, $raw] = $this->request($url);
+            } catch (RuntimeException $e) {
+                // Network errors (timeouts, dropped connections) get the same three retries as server errors.
+                if ($attempt > 3) {
+                    throw $e;
+                }
+                logline($e->getMessage() . '; retrying');
+                sleep(10 * $attempt);
+                continue;
+            }
             $this->pauseIfNearLimit($headers);
             $limited = in_array($status, [403, 429], true)
                 && (isset($headers['retry-after']) || ($headers['x-ratelimit-remaining'] ?? null) === '0');
@@ -82,6 +92,7 @@ final class GitHub
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_USERAGENT => $this->userAgent,
             CURLOPT_HTTPHEADER => $send,
+            CURLOPT_CONNECTTIMEOUT => 15,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_ENCODING => '',
             CURLOPT_HEADERFUNCTION => function ($ch, string $line) use (&$headers): int {
