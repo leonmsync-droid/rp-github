@@ -14,3 +14,6 @@ design/
 storage/
 *.log
 .DS_Store
+
+# Written by AutoSSL on the server
+display/.well-known/
