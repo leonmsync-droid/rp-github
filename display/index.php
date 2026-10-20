@@ -64,18 +64,22 @@ View::header('Rising Repos', 'home', $q);
     </aside>
 
     <main class="main" id="main">
-      <div class="status-row">
-        <?php $previewDays = (int) config('product.preview_days'); if ($days < $previewDays): ?>
-        <span class="pill pill-preview">Preview</span>
-        <span class="status-text">Day <?= $days ?> of <?= $previewDays ?>: 7-day gains switch on after a full week</span>
-        <?php else: ?>
-        <span class="pill pill-live">Live</span>
-        <span class="status-text">Updated daily</span>
-        <?php endif; ?>
-      </div>
-
-      <h1 class="title"><?= View::icon('trend', 28) ?>Rising repos</h1>
-      <p class="lede">New open-source projects on GitHub, ranked by how fast they're gaining traction. Public repos created in the last <?= (int) config('product.include_days') ?> days with <?= (int) config('product.min_stars') ?>+ stars. Updated <?= $e(View::date($board['date'])) ?>.</p>
+      <section class="hero" aria-labelledby="hero-title">
+        <?= View::heroArt() ?>
+        <div class="hero-body">
+          <h1 class="wordmark" id="hero-title"><span>Rising</span><?= View::pixelArrow() ?><span>Repos</span></h1>
+          <p class="hero-lede">New open-source projects on GitHub, ranked by how fast they're gaining traction. Public repos created in the last <?= (int) config('product.include_days') ?> days with <?= (int) config('product.min_stars') ?>+ stars.</p>
+          <div class="hero-foot">
+            <?php $previewDays = (int) config('product.preview_days'); if ($days < $previewDays): ?>
+            <span class="pill pill-preview">Preview</span>
+            <span>Day <?= $days ?> of <?= $previewDays ?>: 7-day gains switch on after a full week</span>
+            <?php else: ?>
+            <span class="pill pill-live">Live</span>
+            <?php endif; ?>
+            <span class="hero-facts"><b><?= View::num(count($board['items'])) ?></b> ranked · updated <?= $e(View::date($board['date'], 'j M')) ?></span>
+          </div>
+        </div>
+      </section>
 
       <section class="box" aria-labelledby="board-title">
         <div class="box-head">

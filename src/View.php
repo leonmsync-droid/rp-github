@@ -100,6 +100,72 @@ final class View
         return '<svg class="spark ' . ($rising ? 'up' : 'down') . '" width="' . $w . '" height="' . $h . '" viewBox="0 0 ' . $w . ' ' . $h . '" aria-hidden="true"><path d="' . $path . '"/></svg>';
     }
 
+    // Hero banner: three pixel-pattern panels and a pixel bar chart rising out of the top edge.
+    // Drawn here as SVG (no images, nothing borrowed); the top 64 units sit above the card.
+    public static function heroArt(): string
+    {
+        $c = 16;                 // pixel size
+        $top = 64;               // space above the banner for the bars to break out
+        $rows = 8;               // banner height in pixels
+        $h = $top + $rows * $c;
+        $out = '';
+        $rect = fn(float $x, float $y, float $w, float $hh, string $class): string => "<rect class=\"{$class}\" x=\"{$x}\" y=\"{$y}\" width=\"{$w}\" height=\"{$hh}\"/>";
+
+        // Panel 1: blue with mustard 2×2 blocks on a diagonal rhythm.
+        $out .= $rect(0, $top, 320, $rows * $c, 'p1');
+        for ($by = 0; $by < $rows / 2; $by++) {
+            for ($bx = 0; $bx < 10; $bx++) {
+                if (($bx + 2 * $by) % 3 === 0) {
+                    $out .= $rect($bx * 2 * $c, $top + $by * 2 * $c, 2 * $c, 2 * $c, 'p1a');
+                }
+            }
+        }
+        // Panel 2: orange with a lilac checkerboard, a few squares knocked out.
+        $out .= $rect(320, $top, 320, $rows * $c, 'p2');
+        for ($y = 0; $y < $rows; $y++) {
+            for ($x = 0; $x < 20; $x++) {
+                if (($x + $y) % 2 === 0 && ($x * 7 + $y * 3) % 5 !== 0) {
+                    $out .= $rect(320 + $x * $c, $top + $y * $c, $c, $c, 'p2a');
+                }
+            }
+        }
+        // Panel 3: green with scattered light-green pixels.
+        $out .= $rect(640, $top, 320, $rows * $c, 'p3');
+        for ($y = 0; $y < $rows; $y++) {
+            for ($x = 0; $x < 20; $x++) {
+                if (($x * 5 + $y * 11) % 7 === 0) {
+                    $out .= $rect(640 + $x * $c, $top + $y * $c, $c, $c, 'p3a');
+                }
+            }
+        }
+
+        // Rising bars: dark columns with a bright cap, the last ones breaking out of the banner.
+        $heights = [3, 4, 4, 6, 7, 9, 10, 12];
+        $bars = '';
+        foreach ($heights as $i => $n) {
+            $x = 672 + $i * 2 * $c + $i * 4;
+            $y = $h - $n * $c;
+            $bars .= $rect($x, $y + $c, 2 * $c, ($n - 1) * $c, 'hb');
+            $bars .= $rect($x, $y, 2 * $c, $c, 'hc');
+        }
+
+        return '<svg class="hero-art" viewBox="0 0 960 ' . $h . '" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">'
+            . '<defs><clipPath id="banner"><rect x="0" y="' . $top . '" width="960" height="' . ($rows * $c + 20) . '" rx="11"/></clipPath></defs>'
+            . '<g clip-path="url(#banner)">' . $out . '</g>' . $bars . '</svg>';
+    }
+
+    // Small pixel arrow used as the wordmark's accent.
+    public static function pixelArrow(): string
+    {
+        // A ↗ arrow: head along the top and right edge, shaft down to the bottom left.
+        $cells = [[2, 0], [3, 0], [4, 0], [4, 1], [4, 2], [3, 1], [2, 2], [1, 3], [0, 4]];
+        $r = '';
+        foreach ($cells as [$x, $y]) {
+            $r .= '<rect x="' . ($x * 4) . '" y="' . ($y * 4) . '" width="4" height="4"/>';
+        }
+        return '<svg class="pixel-arrow" viewBox="0 0 20 20" aria-hidden="true">' . $r . '</svg>';
+    }
+
     // Octicons-style line icons, drawn here (no GitHub marks).
     public static function icon(string $name, int $size = 16): string
     {
