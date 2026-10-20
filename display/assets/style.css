@@ -155,7 +155,7 @@ h1, h2, p { margin: 0; }
   border-right: 1px solid var(--border-muted);
   background: var(--inset);
 }
-.main { padding: 32px 32px 48px; max-width: 980px; width: 100%; justify-self: center; }
+.main { padding: 32px 32px 48px; min-width: 0; }
 .rail { padding: 32px 16px 48px 0; display: flex; flex-direction: column; gap: 16px; }
 
 /* Sidebar */
@@ -256,7 +256,7 @@ h1, h2, p { margin: 0; }
 /* Hero: pixel banner with bars breaking out of the top edge */
 .hero {
   position: relative;
-  margin: 56px 0 24px;
+  margin: 64px 0 24px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--panel);
@@ -264,9 +264,8 @@ h1, h2, p { margin: 0; }
 .hero-art {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 960 / 192;
-  margin-top: -6.667%;           /* the 64 of 192 units above the banner */
+  height: 156px;                 /* fixed: wider screens show more panels, not bigger ones */
+  margin-top: -52px;             /* the 64 of 192 units above the banner */
 }
 .hero-art .p1 { fill: #5b3cf0; }
 .hero-art .p1a { fill: #c9a93a; }
@@ -500,7 +499,6 @@ h1, h2, p { margin: 0; }
   .top-actions .icon-btn:nth-child(2) { display: none; }
   .title { font-size: 26px; }
   .hero { margin-top: 40px; }
-  .hero-art { aspect-ratio: 480 / 192; margin-top: -13.333%; }
   .hero-body { padding: 18px 16px 16px; }
   .hero-facts { margin-left: 0; }
   .row { grid-template-columns: 28px minmax(0, 1fr); }
