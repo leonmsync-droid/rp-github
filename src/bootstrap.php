@@ -4,7 +4,8 @@ declare(strict_types=1);
 // Shared setup for ingest, scoring and display scripts.
 
 define('APP_ROOT', dirname(__DIR__));
-define('DATA_DIR', APP_ROOT . '/data');
+// RP_DATA_DIR lets a local demo dataset be used without touching real data.
+define('DATA_DIR', getenv('RP_DATA_DIR') ?: APP_ROOT . '/data');
 
 date_default_timezone_set('UTC');
 

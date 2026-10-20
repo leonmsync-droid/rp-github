@@ -1,0 +1,9 @@
+{
+  "metrics": [
+    { "metric": "stars_gained_7d", "weight": 0.45, "direction": "higher_better", "label": "Stars gained, last 7 days" },
+    { "metric": "stars_per_day_since_creation", "weight": 0.20, "direction": "higher_better", "label": "Stars per day since creation" },
+    { "metric": "forks_gained_7d", "weight": 0.15, "direction": "higher_better", "label": "Forks gained, last 7 days" },
+    { "metric": "contributors_total", "weight": 0.10, "direction": "higher_better", "label": "Contributors" },
+    { "metric": "days_since_last_push", "weight": 0.10, "direction": "lower_better", "label": "Days since last push" }
+  ]
+}

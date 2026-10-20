@@ -7,4 +7,8 @@ return [
     'track_days' => 180,      // once included, it stays tracked until this age
     'raw_keep_days' => 90,    // raw API responses older than this are pruned
     'search_cap' => 1000,     // GitHub search returns at most this many results per query
+    // Held back from ranking as a possible fake-star pattern: many stars, almost no forks.
+    'suspect_min_stars' => 300,
+    'suspect_max_forks' => 2,
+    'launch_days' => 7,        // the holding page shows until this many daily snapshots exist
 ];
