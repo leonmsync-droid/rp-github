@@ -1,0 +1,16 @@
+# Secrets — never commit
+config.php
+.env
+
+# Generated data (rebuilt by the ingest jobs; the open dataset is published separately)
+data/raw/*
+data/snapshots/*
+data/scores/*
+data/state/*
+!data/*/.gitkeep
+
+# Local only
+design/
+storage/
+*.log
+.DS_Store
