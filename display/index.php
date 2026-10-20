@@ -65,9 +65,9 @@ View::header('Rising Repos', 'home', $q);
 
     <main class="main" id="main">
       <div class="status-row">
-        <?php if ($days < $launchDays): ?>
+        <?php $previewDays = (int) config('product.preview_days'); if ($days < $previewDays): ?>
         <span class="pill pill-preview">Preview</span>
-        <span class="status-text">Day <?= $days ?> of <?= $launchDays ?>: 7-day gains switch on after a full week</span>
+        <span class="status-text">Day <?= $days ?> of <?= $previewDays ?>: 7-day gains switch on after a full week</span>
         <?php else: ?>
         <span class="pill pill-live">Live</span>
         <span class="status-text">Updated daily</span>

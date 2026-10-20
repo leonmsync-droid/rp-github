@@ -10,5 +10,6 @@ return [
     // Held back from ranking as a possible fake-star pattern: many stars, almost no forks.
     'suspect_min_stars' => 300,
     'suspect_max_forks' => 2,
-    'launch_days' => 7,        // the holding page shows until this many daily snapshots exist
+    'launch_days' => 1,        // the holding page shows until this many daily snapshots exist
+    'preview_days' => 7,       // "Preview" pill until a full week (and the 7-day gains) exists
 ];
