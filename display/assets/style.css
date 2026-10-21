@@ -346,6 +346,36 @@ h1, h2, p { margin: 0; }
 .spark.down { stroke: var(--down); }
 .spark-empty { display: inline-block; width: 88px; color: var(--muted); text-align: center; }
 
+/* Expandable rows: click a row for a short summary; the repo name still opens its page */
+.row { cursor: pointer; }
+.row-toggle {
+  display: inline-grid; place-items: center; width: 26px; height: 26px; margin: 0 -6px 0 -4px; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer;
+}
+.row-toggle svg { transition: transform .5s cubic-bezier(.32, .72, 0, 1); }
+.row:hover .row-toggle, .row-toggle:focus-visible { color: var(--text); background: var(--border-muted); }
+.row.open { background: var(--raised); }
+.row.open .row-toggle svg { transform: rotate(180deg); }
+.preview { background: var(--raised); }
+.preview-body {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px 40px; align-items: start;
+  padding: 2px 16px 20px 64px;
+}
+.preview-loading { display: block; color: var(--muted); font-size: 13px; }
+.preview-verdict { grid-column: 1 / -1; color: var(--muted); }
+.preview-stats { display: grid; grid-template-columns: repeat(2, auto); gap: 14px 32px; margin: 0; justify-content: start; }
+.preview-stats dt { color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+.preview-stats dd { margin: 0; font: 600 15px var(--mono); white-space: nowrap; }
+.preview-stats dd small { display: block; color: var(--muted); font: 12px var(--font); }
+.preview-parts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-width: 520px; }
+.preview-parts li { display: grid; grid-template-columns: minmax(0, 190px) minmax(60px, 1fr) 64px; gap: 12px; align-items: center; font-size: 12px; }
+.preview-parts li > span { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.preview-parts b { font: 600 12px var(--mono); text-align: right; }
+.preview-parts .missing b { color: var(--muted); font-weight: 400; }
+.preview-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
+.btn-primary { background: #238636; border-color: rgba(240, 246, 252, .1); color: #fff; }
+.btn-primary:hover { background: #29903b; color: #fff; }
+
 /* Right rail cards */
 .card { padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--panel); }
 .card-title { margin-bottom: 14px; font-size: 14px; font-weight: 600; }
@@ -505,6 +535,9 @@ h1, h2, p { margin: 0; }
   .nums { grid-column: 2; gap: 12px; }
   .score { min-width: 0; text-align: left; }
   .desc { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .row-toggle { margin-left: auto; }
+  .preview-body { grid-template-columns: minmax(0, 1fr); padding: 0 16px 18px 56px; }
+  .preview-parts li { grid-template-columns: minmax(0, 1fr) 64px 56px; }
   .detail-head { flex-direction: column; gap: 16px; }
   .facts { grid-template-columns: 1fr; }
 }

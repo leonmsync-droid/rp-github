@@ -19,31 +19,7 @@ if (!$item || (count(Snapshots::dates()) < (int) config('product.launch_days') &
 $e = [View::class, 'e'];
 $metrics = $item['metrics'];
 $labels = array_column($board['weights'], 'label', 'metric');
-$units = [
-    'stars_gained_7d' => fn($v) => '+' . View::num($v) . ' stars',
-    'forks_gained_7d' => fn($v) => '+' . View::num($v) . ' forks',
-    'stars_per_day_since_creation' => fn($v) => View::num($v, $v < 10 ? 1 : 0) . ' a day',
-    'contributors_total' => fn($v) => View::num($v),
-    'days_since_last_push' => fn($v) => $v < 1 ? 'today' : View::num($v, 0) . ' days',
-];
-
-// The strongest metric becomes the one-line verdict.
-$best = null;
-foreach ($board['weights'] as $m) {
-    if (isset($item['pct'][$m['metric']]) && ($best === null || $item['pct'][$m['metric']] > $item['pct'][$best['metric']])) {
-        $best = $m;
-    }
-}
-// Capped at 99: "better than 100%" would include the repo itself.
-$beats = fn(float $pct): int => min(99, (int) floor($pct));
-$share = $best ? $beats($item['pct'][$best['metric']]) : 0;
-$verdicts = [
-    'stars_gained_7d' => "Gained more stars this week than {$share}% of tracked repos.",
-    'forks_gained_7d' => "Gained more forks this week than {$share}% of tracked repos.",
-    'stars_per_day_since_creation' => "Gaining stars faster since launch than {$share}% of tracked repos.",
-    'contributors_total' => "More contributors than {$share}% of tracked repos.",
-    'days_since_last_push' => "Updated more recently than {$share}% of tracked repos.",
-];
+$verdict = View::verdict($board, $item);
 
 // Score history chart (default weights), drawn as SVG.
 $hist = $item['spark'];
@@ -79,7 +55,7 @@ View::header($item['name'] . ' · Rising Repos');
       <a class="btn" href="<?= $e($item['url']) ?>" rel="noopener">View on GitHub <?= View::icon('external', 14) ?></a>
     </header>
 
-    <?php if ($best): ?><p class="verdict"><?= $e($verdicts[$best['metric']]) ?></p><?php endif; ?>
+    <?php if ($verdict): ?><p class="verdict"><?= $e($verdict) ?></p><?php endif; ?>
 
     <div class="stats">
       <div class="stat"><span>Score</span><b><?= View::num($item['score'], 1) ?></b><small>out of 100</small></div>
@@ -119,10 +95,10 @@ View::header($item['name'] . ' · Rising Repos');
           <li class="<?= $has ? '' : 'missing' ?>">
             <div class="part-head">
               <span><?= $e($labels[$metric]) ?></span>
-              <span class="part-value"><?= isset($metrics[$metric]) ? $e($units[$metric]($metrics[$metric])) : 'Not yet available' ?></span>
+              <span class="part-value"><?= isset($metrics[$metric]) ? $e(View::metricValue($metric, $metrics[$metric])) : 'Not yet available' ?></span>
             </div>
             <svg class="bar" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true"><rect class="bar-bg" width="100" height="6" rx="3"/><?php if ($has): ?><rect class="bar-fill" width="<?= max(1, $item['pct'][$metric]) ?>" height="6" rx="3"/><?php endif; ?></svg>
-            <small><?= $has ? 'Better than ' . $beats($item['pct'][$metric]) . '% of tracked repos · weight ' . (int) round($m['weight'] * 100) . '%' : 'Weight ' . (int) round($m['weight'] * 100) . '% · shared across the other metrics for now' ?></small>
+            <small><?= $has ? 'Better than ' . View::beats($item['pct'][$metric]) . '% of tracked repos · weight ' . (int) round($m['weight'] * 100) . '%' : 'Weight ' . (int) round($m['weight'] * 100) . '% · shared across the other metrics for now' ?></small>
           </li>
           <?php endforeach; ?>
         </ul>

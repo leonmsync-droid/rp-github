@@ -193,6 +193,7 @@ final class View
             'sliders' => '<path d="M2 4h7M12 4h2M2 12h2M7 12h7"/><circle cx="10.5" cy="4" r="1.5"/><circle cx="5.5" cy="12" r="1.5"/>',
             'shield' => '<path d="M8 1.75 13.25 3.5v4c0 3.2-2.2 5.6-5.25 6.75C4.95 13.1 2.75 10.7 2.75 7.5v-4Z"/>',
             'external' => '<path d="M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v3.25c0 .4-.35.75-.75.75h-8c-.4 0-.75-.35-.75-.75v-8c0-.4.35-.75.75-.75H6.5"/>',
+            'chevron' => '<path d="M4 6l4 4 4-4"/>',
             'star' => '<path d="m8 1.75 1.9 3.9 4.3.6-3.1 3 .75 4.25L8 11.5l-3.85 2 .75-4.25-3.1-3 4.3-.6Z"/>',
             'fork' => '<circle cx="4.5" cy="3" r="1.5"/><circle cx="11.5" cy="3" r="1.5"/><circle cx="8" cy="13" r="1.5"/><path d="M4.5 4.5v1c0 1.1.9 2 2 2h3c1.1 0 2-.9 2-2v-1M8 7.5v4"/>',
         ];
@@ -200,11 +201,52 @@ final class View
     }
 
     // One leaderboard row; also returned by api/board.php so live updates match the first render.
+    // A metric's raw value in words, e.g. "+1,204 stars" or "3 days".
+    public static function metricValue(string $metric, float|int $v): string
+    {
+        return match ($metric) {
+            'stars_gained_7d' => '+' . self::num($v) . ' stars',
+            'forks_gained_7d' => '+' . self::num($v) . ' forks',
+            'stars_per_day_since_creation' => self::num($v, $v < 10 ? 1 : 0) . ' a day',
+            'days_since_last_push' => $v < 1 ? 'today' : self::num($v, 0) . ' days',
+            default => self::num($v),
+        };
+    }
+
+    // "Better than X%": capped at 99, since 100% would include the repo itself.
+    public static function beats(float $pct): int
+    {
+        return min(99, (int) floor($pct));
+    }
+
+    // One-line verdict from the repo's strongest metric, or null before any metric has a percentile.
+    public static function verdict(array $board, array $item): ?string
+    {
+        $best = null;
+        foreach ($board['weights'] as $m) {
+            if (isset($item['pct'][$m['metric']]) && ($best === null || $item['pct'][$m['metric']] > $item['pct'][$best])) {
+                $best = $m['metric'];
+            }
+        }
+        if ($best === null) {
+            return null;
+        }
+        $share = self::beats($item['pct'][$best]);
+        return match ($best) {
+            'stars_gained_7d' => "Gained more stars this week than {$share}% of tracked repos.",
+            'forks_gained_7d' => "Gained more forks this week than {$share}% of tracked repos.",
+            'stars_per_day_since_creation' => "Gaining stars faster since launch than {$share}% of tracked repos.",
+            'contributors_total' => "More contributors than {$share}% of tracked repos.",
+            'days_since_last_push' => "Updated more recently than {$share}% of tracked repos.",
+            default => null,
+        };
+    }
+
     public static function row(array $i, bool $custom): string
     {
         $pos = $i['position'] ?? $i['rank'];
         $desc = $i['description'] !== '' ? '<p class="desc">' . self::e($i['description']) . '</p>' : '';
-        return '<li class="row">'
+        return '<li class="row" data-id="' . self::e($i['id']) . '">'
             . '<span class="pos">' . $pos . '</span>'
             . '<div class="what">'
             . '<a class="name" href="repo.php?id=' . self::e($i['id']) . '">' . self::repoName($i['name']) . '</a>'
@@ -218,6 +260,7 @@ final class View
             . '<span class="score" title="Score out of 100' . ($custom ? ', with your weights' : '') . '">' . self::num($i['score'], 1) . '</span>'
             . self::change($i['rank_change'], $i['is_new'])
             . self::sparkline($i['spark'])
+            . '<button class="row-toggle" type="button" aria-expanded="false" aria-label="Show a summary of ' . self::e($i['name']) . '">' . self::icon('chevron', 14) . '</button>'
             . '</div></li>';
     }
 

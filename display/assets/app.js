@@ -1,4 +1,5 @@
-// Rising Repos: theme switch, "/" to search, and live search and re-weighting via api/board.php.
+// Rising Repos: theme switch, "/" to search, live search and re-weighting via api/board.php,
+// and leaderboard rows that open a short summary (api/preview.php) when clicked.
 (function () {
   'use strict';
 
@@ -37,6 +38,73 @@
         search.focus();
       }
     });
+
+    // Leaderboard rows: click to open a short summary; the repo name still goes to the repo page.
+    // Heights use offsetHeight/scrollHeight, which ignore the desktop zoom, so the animation lines up.
+    var list = document.getElementById('rows');
+    if (list) {
+      var EASE = 'cubic-bezier(.32, .72, 0, 1)';
+      var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('animate' in Element.prototype);
+      var cache = {};
+
+      var load = function (id) {
+        cache[id] = cache[id] || fetch('api/preview.php?id=' + encodeURIComponent(id))
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+          .catch(function (e) { delete cache[id]; throw e; });
+        return cache[id];
+      };
+
+      var slide = function (box, from, to, opening) {
+        if (still) return Promise.resolve();
+        box.style.overflow = 'hidden';
+        if (box.firstElementChild) {
+          box.firstElementChild.animate(
+            { opacity: opening ? [0, 1] : [1, 0], transform: opening ? ['translateY(-6px)', 'none'] : ['none', 'translateY(-6px)'] },
+            { duration: opening ? 520 : 260, easing: EASE, fill: 'both' });
+        }
+        var anim = box.animate({ height: [from + 'px', to + 'px'] }, { duration: opening ? 520 : 400, easing: EASE });
+        box._anim = anim;
+        return anim.finished.then(function () { if (box._anim === anim) box.style.overflow = ''; });
+      };
+
+      var open = function (row, button) {
+        var item = document.createElement('li');
+        item.className = 'preview';
+        item.id = 'preview-' + row.dataset.id;
+        item.innerHTML = '<div class="preview-body preview-loading">Loading…</div>';
+        row.after(item);
+        row.classList.add('open');
+        button.setAttribute('aria-expanded', 'true');
+        button.setAttribute('aria-controls', item.id);
+        slide(item, 0, item.scrollHeight, true);
+        load(row.dataset.id).then(function (html) {
+          if (!item.isConnected) return;
+          var from = item.offsetHeight;
+          item.innerHTML = html;
+          slide(item, from, item.scrollHeight, true);
+        }, function () {
+          item.firstElementChild.textContent = 'Couldn’t load this repo. Open its page instead.';
+        });
+      };
+
+      var close = function (row, button) {
+        var item = row.nextElementSibling;
+        row.classList.remove('open');
+        button.setAttribute('aria-expanded', 'false');
+        if (!item || !item.classList.contains('preview') || item.classList.contains('closing')) return;
+        item.classList.add('closing');
+        slide(item, item.offsetHeight, 0, false).then(function () { item.remove(); });
+      };
+
+      list.addEventListener('click', function (event) {
+        var row = event.target.closest('li.row');
+        if (!row || event.target.closest('a') || String(window.getSelection())) return;
+        var next = row.nextElementSibling;
+        var isOpen = row.classList.contains('open');
+        if (!isOpen && next && next.classList.contains('preview')) next.remove(); // still closing: replace it
+        (isOpen ? close : open)(row, row.querySelector('.row-toggle'));
+      });
+    }
 
     // Live updates only on the leaderboard page.
     var rows = document.getElementById('rows');
