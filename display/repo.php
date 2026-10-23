@@ -25,12 +25,13 @@ $verdict = View::verdict($board, $item);
 $hist = $item['spark'];
 $dates = $board['spark_dates'];
 $W = 640; $H = 180; $pad = 28;
-$pts = [];
+$pts = $tips = [];
 foreach ($hist as $i => $v) {
     if ($v !== null) {
         $x = $pad + $i * ($W - 2 * $pad) / max(1, count($hist) - 1);
         $y = $H - $pad - $v / 100 * ($H - 2 * $pad);
         $pts[] = [round($x, 1), round($y, 1)];
+        $tips[] = [round($x, 1), round($y, 1), View::date($dates[$i], 'j M'), round($v, 1)]; // for the hover box
     }
 }
 $line = $pts ? 'M' . implode('L', array_map(fn($p) => "{$p[0]} {$p[1]}", $pts)) : '';
@@ -69,7 +70,7 @@ View::header($item['name'] . ' · Rising Repos');
         <div class="box-head"><h2>Score history</h2><span class="box-sub">Last <?= count($dates) ?> days · default weights</span></div>
         <div class="chart">
           <?php if (count($pts) >= 2): ?>
-          <svg viewBox="0 0 <?= $W ?> <?= $H ?>" role="img" aria-label="Score over the last <?= count($dates) ?> days, from <?= View::num($pts ? $hist[array_key_first(array_filter($hist, fn($v) => $v !== null))] : 0, 1) ?> to <?= View::num($item['score'], 1) ?>">
+          <svg id="history" data-points="<?= $e(json_encode($tips)) ?>" data-w="<?= $W ?>" data-h="<?= $H ?>" data-top="<?= $pad ?>" data-bottom="<?= $H - $pad ?>" viewBox="0 0 <?= $W ?> <?= $H ?>" role="img" aria-label="Score over the last <?= count($dates) ?> days, from <?= View::num($pts ? $hist[array_key_first(array_filter($hist, fn($v) => $v !== null))] : 0, 1) ?> to <?= View::num($item['score'], 1) ?>">
             <?php foreach ([0, 50, 100] as $g): $gy = $H - $pad - $g / 100 * ($H - 2 * $pad); ?>
             <line class="grid" x1="<?= $pad ?>" x2="<?= $W - $pad ?>" y1="<?= $gy ?>" y2="<?= $gy ?>"/>
             <text class="axis" x="<?= $pad - 6 ?>" y="<?= $gy + 4 ?>" text-anchor="end"><?= $g ?></text>
@@ -77,9 +78,12 @@ View::header($item['name'] . ' · Rising Repos');
             <path class="area" d="<?= $area ?>"/>
             <path class="line" d="<?= $line ?>"/>
             <circle class="dot" cx="<?= $pts[count($pts) - 1][0] ?>" cy="<?= $pts[count($pts) - 1][1] ?>" r="4"/>
+            <line class="guide" x1="0" x2="0" y1="<?= $pad ?>" y2="<?= $H - $pad ?>"/>
+            <circle class="dot hover-dot" cx="0" cy="0" r="4"/>
             <text class="axis" x="<?= $pad ?>" y="<?= $H - 6 ?>"><?= $e(View::date($dates[0], 'j M')) ?></text>
             <text class="axis" x="<?= $W - $pad ?>" y="<?= $H - 6 ?>" text-anchor="end"><?= $e(View::date(end($dates), 'j M')) ?></text>
           </svg>
+          <div class="chart-tip" id="history-tip" aria-hidden="true"></div>
           <?php else: ?>
           <p class="empty">History builds up from the second day of data.</p>
           <?php endif; ?>

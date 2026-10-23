@@ -106,6 +106,52 @@
       });
     }
 
+    // Repo page: hover the score history for the date, score and change from the day before.
+    // Positions are worked out as a share of the chart's width, so the desktop zoom doesn't matter.
+    var scoreChart = document.getElementById('history');
+    if (scoreChart) {
+      var tipPoints = JSON.parse(scoreChart.dataset.points || '[]');
+      var W = Number(scoreChart.dataset.w);
+      var H = Number(scoreChart.dataset.h);
+      var tip = document.getElementById('history-tip');
+      var guide = scoreChart.querySelector('.guide');
+      var hoverDot = scoreChart.querySelector('.hover-dot');
+
+      var show = function (clientX) {
+        var box = scoreChart.getBoundingClientRect();
+        var x = (clientX - box.left) / box.width * W;
+        var i = 0;
+        tipPoints.forEach(function (p, k) { if (Math.abs(p[0] - x) < Math.abs(tipPoints[i][0] - x)) i = k; });
+        var p = tipPoints[i];
+        var prev = tipPoints[i - 1];
+        var change = prev ? p[3] - prev[3] : null;
+        guide.setAttribute('x1', p[0]);
+        guide.setAttribute('x2', p[0]);
+        hoverDot.setAttribute('cx', p[0]);
+        hoverDot.setAttribute('cy', p[1]);
+        tip.innerHTML = '<b></b><span class="tip-score"></span><span class="tip-change"></span>';
+        tip.children[0].textContent = p[2];
+        tip.children[1].textContent = 'Score ' + p[3].toFixed(1);
+        tip.children[2].textContent = change === null ? 'First day tracked'
+          : (change === 0 ? 'No change' : (change > 0 ? '+' : '−') + Math.abs(change).toFixed(1)) + ' on the day before';
+        tip.children[2].className = 'tip-change ' + (change > 0 ? 'up' : change < 0 ? 'down' : '');
+        // The chart box has 8px padding left and right around the SVG; the box sits along the top edge.
+        tip.style.left = 'calc(8px + (100% - 16px) * ' + (p[0] / W) + ')';
+        tip.classList.toggle('flip', p[0] > W * 0.7); // keep it inside the box near the right edge
+        scoreChart.classList.add('hovering');
+        tip.classList.add('on');
+      };
+      var hide = function () {
+        scoreChart.classList.remove('hovering');
+        tip.classList.remove('on');
+      };
+      scoreChart.addEventListener('mousemove', function (e) { show(e.clientX); });
+      scoreChart.addEventListener('mouseleave', hide);
+      scoreChart.addEventListener('touchstart', function (e) { show(e.touches[0].clientX); }, { passive: true });
+      scoreChart.addEventListener('touchmove', function (e) { show(e.touches[0].clientX); }, { passive: true });
+      scoreChart.addEventListener('touchend', hide);
+    }
+
     // Live updates only on the leaderboard page.
     var rows = document.getElementById('rows');
     var form = document.getElementById('weights');

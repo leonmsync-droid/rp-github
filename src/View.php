@@ -276,8 +276,8 @@ final class View
   <title><?= self::e($title) ?></title>
   <meta name="description" content="New open-source projects on GitHub, ranked by how fast they're gaining traction.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/style.css">
-  <script src="assets/app.js" defer></script>
+  <link rel="stylesheet" href="assets/style.css?v=<?= filemtime(dirname(__DIR__) . '/display/assets/style.css') ?>">
+  <script src="assets/app.js?v=<?= filemtime(dirname(__DIR__) . '/display/assets/app.js') ?>" defer></script>
 </head>
 <body>
   <header class="topbar">

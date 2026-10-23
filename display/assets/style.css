@@ -450,6 +450,24 @@ h1, h2, p { margin: 0; }
 .chart .line { fill: none; stroke: var(--up); stroke-width: 2; stroke-linejoin: round; }
 .chart .area { fill: var(--area); }
 .chart .dot { fill: var(--up); stroke: var(--canvas); stroke-width: 2; }
+.chart { position: relative; }
+.chart svg { cursor: crosshair; }
+.chart .guide, .chart .hover-dot { opacity: 0; transition: opacity .15s; }
+.chart .guide { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; }
+.chart .hovering .guide, .chart .hovering .hover-dot { opacity: 1; }
+.chart-tip {
+  position: absolute; z-index: 2; display: grid; gap: 2px; min-width: 150px; padding: 8px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--raised);
+  box-shadow: 0 8px 24px rgba(1, 4, 9, .35); font-size: 12px; pointer-events: none;
+  top: 8px; white-space: nowrap; opacity: 0; transform: translateX(12px); transition: opacity .15s;
+}
+.chart-tip.flip { transform: translateX(calc(-100% - 12px)); }
+.chart-tip.on { opacity: 1; }
+.chart-tip b { font-size: 13px; font-weight: 600; }
+.chart-tip .tip-score { font: 600 14px var(--mono); }
+.chart-tip .tip-change { color: var(--muted); }
+.chart-tip .tip-change.up { color: var(--up); }
+.chart-tip .tip-change.down { color: var(--down); }
 .parts { list-style: none; margin: 0; padding: 8px 16px 16px; display: grid; gap: 14px; }
 .part-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
 .part-value { font: 600 13px var(--mono); white-space: nowrap; }
